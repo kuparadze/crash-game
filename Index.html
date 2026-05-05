@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Crash Game</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    #balance {
+      font-size: 18px;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+    #multiplier {
+      font-size: 80px;
+      font-weight: bold;
+      color: #00ff88;
+    }
+    #status {
+      font-size: 20px;
+      margin-top: 16px;
+      color: #aaa;
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+      align-items: center;
+    }
+    input {
+      padding: 12px 16px;
+      font-size: 16px;
+      width: 100px;
+      border-radius: 8px;
+      border: none;
+      background: #222;
+      color: white;
+      text-align: center;
+    }
+    button {
+      padding: 12px 28px;
+      font-size: 16px;
+      background: #00ff88;
+      color: #111;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #play-again {
+      margin-top: 20px;
+      background: #333;
+      color: white;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="balance">Balance: $100</div>
+  <div id="multiplier">1.00x</div>
+  <div id="status">Waiting to start...</div>
+
+  <div class="controls">
+    <input id="bet" type="number" value="10" min="1" />
+    <button onclick="cashOut()">Cash Out</button>
+  </div>
+  <button id="play-again" onclick="startGame()">
+    Play Again
+  </button>
+
+  <script>
+    let multiplier = 1.00;
+    let interval = null;
+    let crashPoint = 0;
+    let balance = 100;
+    let bet = 0;
+
+    function startGame() {
+      bet = parseFloat(document.getElementById('bet').value);
+      if (bet < 1 || bet > balance) {
+        alert('Invalid bet!');
+        return;
+      }
+
+      balance -= bet;
+      updateBalance();
+
+      multiplier = 1.00;
+      crashPoint = 1.2 + Math.random() * 3;
+      document.getElementById('multiplier').textContent = '1.00x';
+      document.getElementById('multiplier').style.color = '#00ff88';
+      document.getElementById('status').textContent = 'Running...';
+      document.getElementById('play-again').style.display = 'none';
+
+      interval = setInterval(function() {
+        multiplier += 0.01;
+        document.getElementById('multiplier').textContent
+          = multiplier.toFixed(2) + 'x';
+
+        if (multiplier >= crashPoint) {
+          clearInterval(interval);
+          interval = null;
+          document.getElementById('multiplier').textContent = 'CRASHED!';
+          document.getElementById('multiplier').style.color = '#ff4444';
+          document.getElementById('status').textContent
+            = 'Crashed at ' + crashPoint.toFixed(2) + 'x. You lost $'
+            + bet.toFixed(2);
+          document.getElementById('play-again').style.display = 'block';
+        }
+      }, 50);
+    }
+
+    function cashOut() {
+      if (interval === null) return;
+      clearInterval(interval);
+      interval = null;
+      let winnings = bet * multiplier;
+      balance += winnings;
+      updateBalance();
+      document.getElementById('status').textContent
+        = 'Cashed out at ' + multiplier.toFixed(2)
+        + 'x! You won $' + winnings.toFixed(2);
+      document.getElementById('multiplier').style.color = '#ffdd00';
+      document.getElementById('play-again').style.display = 'block';
+    }
+
+    function updateBalance() {
+      document.getElementById('balance').textContent
+        = 'Balance: $' + balance.toFixed(2);
+    }
+
+    startGame();
+  </script>
+
+</body>
+</html>
